@@ -1,0 +1,12 @@
+{
+    "[rust]": {
+        "editor.tabSize": 4,
+        "editor.detectIndentation": false
+    },
+    "workbench.colorCustomizations": {
+        "titleBar.activeBackground": "#791731",
+        "titleBar.activeForeground": "#FFFFFF",
+        "activityBar.background": "#A72145",
+        "activityBar.foreground": "#FFFFFF"
+    }
+}

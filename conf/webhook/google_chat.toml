@@ -1,0 +1,2 @@
+webhook_url = "https://chat.googleapis.com/v1/spaces/AAAAr0J5ZVw/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=5j_VLRcySwhygmL9r0f1y0v-JTadYfjGVZ87sgKFQJM%3D"
+alert_message = "の疎通確認に失敗しました"

@@ -1,0 +1,2 @@
+access_url = "https://nskk.saaske.com/"
+find_selector = "frame[name='admin']"

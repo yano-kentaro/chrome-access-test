@@ -157,3 +157,48 @@ fn notify_google_chat(url: &str) {
 
     handle.perform().unwrap();
 }
+
+/// Test ( 2023/01/01 : 1 ) [ Kentaro Yano ]
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Test create_path ( 2023/01/08 : 1 ) [ Kentaro Yano ]
+    #[test]
+    fn test_create_path() {
+        let path = create_path(vec!["conf", "test", "service", "sample.toml"]);
+        let current_dir = std::env::current_dir().unwrap();
+        assert_eq!(
+            path.to_str().unwrap(),
+            format!(
+                "{}/conf/test/service/sample.toml",
+                current_dir.to_str().unwrap()
+            )
+        );
+    }
+
+    /// Test parse_toml ( 2023/01/08 : 1 ) [ Kentaro Yano ]
+    #[test]
+    fn test_parse_toml() {
+        // Success case (with cookie)
+        {
+            let path = create_path(vec!["conf", "test", "service", "success-def_cookie.toml"]);
+            let conf = parse_toml(path);
+            assert_eq!(conf.access_url, "https://test.demo.com/");
+            assert_eq!(conf.find_selector, "test_selector");
+            if let Some(cookie) = &conf.cookie {
+                assert_eq!(cookie.name, "cookie_name");
+                assert_eq!(cookie.value, "cookie_value");
+            }
+        }
+
+        // Success case (without cookie)
+        {
+            let path = create_path(vec!["conf", "test", "service", "success-no_cookie.toml"]);
+            let conf = parse_toml(path);
+            assert_eq!(conf.access_url, "https://test.demo.com/");
+            assert_eq!(conf.find_selector, "test_selector");
+            assert_eq!(conf.cookie, None);
+        }
+    }
+}

@@ -1,0 +1,5 @@
+access_url = "https://test.demo.com/"
+find_selector = "test_selector"
+[cookie]
+name = "cookie_name"
+value = "cookie_value"

@@ -50,8 +50,7 @@ fn main() {
     let paths = fs::read_dir(target_dir).unwrap();
     paths.par_bridge().for_each(|path| {
         let path = path.unwrap().path();
-        let path_str = path.to_str().unwrap();
-        let conf = parse_toml(path_str);
+        let conf = parse_toml(path);
         access_test(&conf).unwrap();
     });
 }
@@ -89,7 +88,7 @@ fn create_path(dirs: Vec<&str>) -> PathBuf {
 /// ```
 /// let conf = parse_toml("./conf/service/sample.toml");
 /// ```
-fn parse_toml(path: &str) -> AccessConf {
+fn parse_toml(path: PathBuf) -> AccessConf {
     let toml_str = fs::read_to_string(path).unwrap();
     let toml_struct: AccessConf = toml::from_str(&toml_str).unwrap();
     toml_struct

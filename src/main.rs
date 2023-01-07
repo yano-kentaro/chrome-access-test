@@ -4,6 +4,7 @@ extern crate toml;
 use anyhow::Result;
 use curl::easy::{Easy, List};
 use headless_chrome::{protocol::cdp::Network::CookieParam, Browser, LaunchOptions};
+use rayon::prelude::*;
 use serde_derive::Deserialize;
 use std::{fs, path::PathBuf};
 
@@ -47,12 +48,12 @@ struct GoogleChatConf {
 fn main() {
     let target_dir = create_path(vec!["conf", "service"]);
     let paths = fs::read_dir(target_dir).unwrap();
-    for path in paths {
+    paths.par_bridge().for_each(|path| {
         let path = path.unwrap().path();
         let path_str = path.to_str().unwrap();
         let conf = parse_toml(path_str);
         access_test(&conf).unwrap();
-    }
+    });
 }
 
 /// Create path from manifest_dir and Arguments ( 2023/01/08 : 1 ) [ Kentaro Yano ]

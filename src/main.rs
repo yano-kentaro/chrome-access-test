@@ -5,7 +5,7 @@ use anyhow::Result;
 use curl::easy::{Easy, List};
 use headless_chrome::{protocol::cdp::Network::CookieParam, Browser, LaunchOptions};
 use serde_derive::Deserialize;
-use std::fs;
+use std::{fs, path::PathBuf};
 
 /// Struct of toml file ( 2023/01/01 : 1 ) [ Kentaro Yano ]
 /// # Note
@@ -45,13 +45,38 @@ struct GoogleChatConf {
 
 /// EntryPoint ( 2023/01/01 : 1 ) [ Kentaro Yano ]
 fn main() {
-    let paths = fs::read_dir("./conf/service").unwrap();
+    let target_dir = create_path(vec!["conf", "service"]);
+    let paths = fs::read_dir(target_dir).unwrap();
     for path in paths {
         let path = path.unwrap().path();
         let path_str = path.to_str().unwrap();
         let conf = parse_toml(path_str);
         access_test(&conf).unwrap();
     }
+}
+
+/// Create path from manifest_dir and Arguments ( 2023/01/08 : 1 ) [ Kentaro Yano ]
+/// # Arguments
+/// * `dirs` - Vector of directory names
+/// # Returns
+/// * `PathBuf` - PathBuf of path
+/// # Examples
+/// ```
+/// let path = create_path(vec!["conf", "service", "sample.toml"]);
+/// ```
+fn create_path(dirs: Vec<&str>) -> PathBuf {
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+    let mut path = PathBuf::from(manifest_dir);
+    for dir in dirs {
+        if dir.contains(".") {
+            let filename_and_ext: Vec<&str> = dir.split(".").collect();
+            path.push(filename_and_ext[0]);
+            path.set_extension(filename_and_ext[1]);
+        } else {
+            path.push(dir);
+        }
+    }
+    path
 }
 
 /// Parse Toml file to Struct ( 2023/01/01 : 1 ) [ Kentaro Yano ]
@@ -114,7 +139,8 @@ fn access_test(conf: &AccessConf) -> Result<()> {
 /// ```
 fn notify_google_chat(url: &str) {
     // Retrieve settings from toml file
-    let toml_str = fs::read_to_string("./conf/webhook/google_chat.toml").unwrap();
+    let target_file = create_path(vec!["conf", "webhook", "google_chat.toml"]);
+    let toml_str = fs::read_to_string(target_file).unwrap();
     let conf: GoogleChatConf = toml::from_str(&toml_str).unwrap();
 
     let mut handle = Easy::new();

@@ -227,22 +227,72 @@ mod tests {
         // Success case (with cookie)
         {
             let path = create_path(vec!["conf", "test", "service", "success-def_cookie.toml"]);
-            let conf = parse_toml(path);
+            let conf = parse_toml(path).unwrap();
+            let cookie = conf.cookie.unwrap();
             assert_eq!(conf.access_url, "https://test.demo.com/");
             assert_eq!(conf.find_selector, "test_selector");
-            if let Some(cookie) = &conf.cookie {
-                assert_eq!(cookie.name, "cookie_name");
-                assert_eq!(cookie.value, "cookie_value");
-            }
+            assert_eq!(cookie.name, "cookie_name");
+            assert_eq!(cookie.value, "cookie_value");
         }
 
         // Success case (without cookie)
         {
             let path = create_path(vec!["conf", "test", "service", "success-no_cookie.toml"]);
-            let conf = parse_toml(path);
+            let conf = parse_toml(path).unwrap();
             assert_eq!(conf.access_url, "https://test.demo.com/");
             assert_eq!(conf.find_selector, "test_selector");
             assert_eq!(conf.cookie, None);
+        }
+
+        // Failure case (without access_url)
+        {
+            let path = create_path(vec!["conf", "test", "service", "fail-no_access_url.toml"]);
+            let conf = parse_toml(path);
+            match conf {
+                Err(error::CustomError::AccessUrlNotDefined) => (),
+                _ => panic!("Error type is not AccessUrlNotDefined"),
+            }
+        }
+
+        // Failure case (without find_selector)
+        {
+            let path = create_path(vec![
+                "conf",
+                "test",
+                "service",
+                "fail-no_find_selector.toml",
+            ]);
+            let conf = parse_toml(path);
+            match conf {
+                Err(error::CustomError::FindSelectorNotDefined) => (),
+                _ => panic!("Error type is not FindSelectorNotDefined"),
+            }
+        }
+    }
+
+    /// Test access_test ( 2023/01/08 : 1 ) [ Kentaro Yano ]
+    #[test]
+    fn test_access_test() {
+        // Success case
+        {
+            let path = create_path(vec!["conf", "test", "service", "success-saaske.toml"]);
+            let conf = parse_toml(path).unwrap();
+            let result = access_test(&conf);
+            match result {
+                Ok(_) => (),
+                Err(_) => panic!("Error occurred"),
+            }
+        }
+
+        // Failure case
+        {
+            let path = create_path(vec!["conf", "test", "service", "fail-saaske.toml"]);
+            let conf = parse_toml(path).unwrap();
+            let result = access_test(&conf);
+            match result {
+                Err(error::CustomError::FindSelectorError) => (),
+                _ => panic!("Error type is not FindSelectorError"),
+            }
         }
     }
 }

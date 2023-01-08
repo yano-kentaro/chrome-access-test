@@ -43,7 +43,6 @@ struct AccessConf {
 #[derive(Deserialize)]
 struct GoogleChatConf {
     webhook_url: String,
-    alert_message: String,
 }
 
 /// EntryPoint ( 2023/01/01 : 1 ) [ Kentaro Yano ]
@@ -164,10 +163,10 @@ fn access_test(conf: &AccessConf) -> Result<(), error::CustomError> {
 /// ```
 /// notify_google_chat("https://example.com");
 /// ```
-fn notify_google_chat(url: &str) {
+fn notify_google_chat(url: &str, error: error::CustomError) {
     // Retrieve settings from toml file
-    let target_file = create_path(vec!["conf", "webhook", "google_chat.toml"]);
-    let toml_str = fs::read_to_string(target_file).unwrap();
+    let conf_file = create_path(vec!["conf", "webhook", "google_chat.toml"]);
+    let toml_str = fs::read_to_string(conf_file).unwrap();
     let conf: GoogleChatConf = toml::from_str(&toml_str).unwrap();
 
     let mut handle = Easy::new();
@@ -178,7 +177,7 @@ fn notify_google_chat(url: &str) {
     list.append("Content-Type: application/json").unwrap();
     handle.http_headers(list).unwrap();
 
-    let message = format!("{{\"text\": \"{} {}\"}}", url, conf.alert_message);
+    let message = format!("{{\"text\": \"{}\n{}\"}}", url, error);
     let data = message.as_bytes();
     handle.post_fields_copy(data).unwrap();
 

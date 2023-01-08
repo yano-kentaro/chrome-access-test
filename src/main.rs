@@ -45,6 +45,9 @@ struct GoogleChatConf {
 }
 
 /// EntryPoint ( 2023/01/01 : 1 ) [ Kentaro Yano ]
+/// # Note
+/// * conf/service/*.toml is parsed and access test is performed.
+/// * If the access test fails, a notification is sent to Google Chat.
 fn main() {
     let service_dir = create_path(vec!["conf", "service"]);
     let paths = fs::read_dir(service_dir).unwrap();
@@ -93,9 +96,9 @@ fn create_path(dirs: Vec<&str>) -> PathBuf {
 
 /// Parse Toml file to Struct ( 2023/01/01 : 1 ) [ Kentaro Yano ]
 /// # Arguments
-/// * `path` - Path to toml file
+/// * `path` - Path of toml file
 /// # Returns
-/// * `AccessConf` - Struct of toml file
+/// * `Result<AccessConf, error::CustomError>` - Result of parsing toml file
 /// # Examples
 /// ```
 /// let conf = parse_toml("./conf/service/sample.toml");
@@ -121,7 +124,7 @@ fn parse_toml(path: PathBuf) -> Result<AccessConf, error::CustomError> {
 /// # Arguments
 /// * `conf` - Struct of toml file
 /// # Returns
-/// * `Result<()>` - Result of access test
+/// * `Result<(), error::CustomError>` - Result of access tests
 /// # Examples
 /// ```
 /// let conf = parse_toml("./conf/service/sample.toml");

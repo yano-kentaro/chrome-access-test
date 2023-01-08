@@ -46,8 +46,8 @@ struct GoogleChatConf {
 
 /// EntryPoint ( 2023/01/01 : 1 ) [ Kentaro Yano ]
 fn main() {
-    let target_dir = create_path(vec!["conf", "service"]);
-    let paths = fs::read_dir(target_dir).unwrap();
+    let service_dir = create_path(vec!["conf", "service"]);
+    let paths = fs::read_dir(service_dir).unwrap();
     paths.par_bridge().for_each(|path| {
         let path = path.unwrap().path();
         let conf = parse_toml(path);

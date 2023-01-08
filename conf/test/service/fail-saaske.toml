@@ -1,0 +1,5 @@
+access_url = "https://my.saaske.com/"
+find_selector = "frame[name='admi']"
+[cookie]
+name = "ttac"
+value = "tp:c00102027,id:demo,pw:dekFcOrew5pUA,tm:1673098868,ss:demo1673098868,dv:pc"

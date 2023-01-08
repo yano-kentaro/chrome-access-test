@@ -53,7 +53,11 @@ fn main() {
     paths.par_bridge().for_each(|path| {
         let path = path.unwrap().path();
         let conf = parse_toml(path);
-        access_test(&conf).unwrap();
+        let result = access_test(&conf);
+        match result {
+            Ok(_) => (),
+            Err(e) => notify_google_chat(&conf.access_url, e),
+        }
     });
 }
 
@@ -106,28 +110,49 @@ fn parse_toml(path: PathBuf) -> AccessConf {
 /// let conf = parse_toml("./conf/service/sample.toml");
 /// access_test(&conf).unwrap();
 /// ```
-fn access_test(conf: &AccessConf) -> Result<()> {
+fn access_test(conf: &AccessConf) -> Result<(), error::CustomError> {
+    // Set headless chrome option.
     let option = LaunchOptions {
         // If you want to see what's going on, comment in the line below.
         // headless: false,
         ..Default::default()
     };
-    let browser = Browser::new(option)?;
-    let tab = browser.wait_for_initial_tab()?;
 
-    tab.navigate_to(&conf.access_url)?.wait_until_navigated()?;
+    // Launch headless chrome.
+    let browser = Browser::new(option).unwrap();
+    let tab = browser.wait_for_initial_tab().unwrap();
 
-    // Set cookie if one is defined
-    if let Some(cookie) = &conf.cookie {
-        tab.set_cookies(vec![cookie.clone()])?;
-        tab.reload(false, None)?.wait_until_navigated()?;
-    }
-
-    // Verify the presence of selector for validation.
-    match tab.wait_for_element(&conf.find_selector) {
+    // Navigate to access_url.
+    tab.navigate_to(&conf.access_url).unwrap();
+    let result = tab.wait_until_navigated();
+    match result {
         Ok(_) => (),
-        Err(_) => notify_google_chat(&conf.access_url),
+        Err(_) => return Err(error::CustomError::AccessUrlError),
+    };
+
+    // Set cookie if one is defined.
+    if let Some(cookie) = &conf.cookie {
+        tab.set_cookies(vec![cookie.clone()]).unwrap();
+        tab.reload(false, None).unwrap();
+        tab.wait_until_navigated().unwrap();
+
+        // Verify the presence of cookie for authentication.
+        let cookies = tab.get_cookies().unwrap();
+        let cookie = cookies
+            .iter()
+            .find(|c| c.name == cookie.name && c.value == cookie.value);
+        match cookie {
+            Some(_) => (),
+            None => return Err(error::CustomError::CookieError),
+        };
     }
+
+    // Verify the presence of selector for access test.
+    let selector = tab.wait_for_element(&conf.find_selector);
+    match selector {
+        Ok(selector) => selector,
+        Err(_) => return Err(error::CustomError::FindSelectorError),
+    };
 
     Ok(())
 }

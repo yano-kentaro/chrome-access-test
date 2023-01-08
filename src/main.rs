@@ -38,7 +38,6 @@ struct AccessConf {
 /// ```
 /// webhook_url = "https://chat.googleapis.com/v1/spaces/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ///              /messages?key=XXXXXXXXXXXXXXXXXXXXXXXX"
-/// alert_message = " is not working."
 /// ```
 #[derive(Deserialize)]
 struct GoogleChatConf {

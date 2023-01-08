@@ -51,6 +51,14 @@ fn main() {
     paths.par_bridge().for_each(|path| {
         let path = path.unwrap().path();
         let conf = parse_toml(path);
+        let conf = match conf {
+            Ok(conf) => conf,
+            Err(e) => {
+                notify_google_chat("", e);
+                return;
+            }
+        };
+
         let result = access_test(&conf);
         match result {
             Ok(_) => (),
@@ -92,10 +100,21 @@ fn create_path(dirs: Vec<&str>) -> PathBuf {
 /// ```
 /// let conf = parse_toml("./conf/service/sample.toml");
 /// ```
-fn parse_toml(path: PathBuf) -> AccessConf {
+fn parse_toml(path: PathBuf) -> Result<AccessConf, error::CustomError> {
     let toml_str = fs::read_to_string(path).unwrap();
     let toml_struct: AccessConf = toml::from_str(&toml_str).unwrap();
-    toml_struct
+
+    match toml_struct.access_url.is_empty() {
+        true => return Err(error::CustomError::AccessUrlNotDefined),
+        false => (),
+    };
+
+    match toml_struct.find_selector.is_empty() {
+        true => return Err(error::CustomError::FindSelectorNotDefined),
+        false => (),
+    };
+
+    Ok(toml_struct)
 }
 
 /// Test access and notify if it fails ( 2023/01/01 : 1 ) [ Kentaro Yano ]

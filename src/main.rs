@@ -8,6 +8,8 @@ use rayon::prelude::*;
 use serde_derive::Deserialize;
 use std::{fs, path::PathBuf};
 
+mod error;
+
 /// Struct of toml file ( 2023/01/01 : 1 ) [ Kentaro Yano ]
 /// # Note
 /// * The toml file must be in the following format.
